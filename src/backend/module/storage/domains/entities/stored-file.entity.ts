@@ -1,5 +1,5 @@
 import { Entity, Column } from 'typeorm';
-import { BaseEntity } from '../../../database/entities/base.entity';
+import { BaseEntity } from '@/src/backend/module/database/entities';
 
 export enum FilePurpose {
   AVATAR = 'AVATAR',

@@ -9,7 +9,7 @@ export class S3StorageAdapter implements IStorageAdapter {
 
   constructor() {
     this.region = process.env.AWS_REGION || 'ap-southeast-1';
-    this.bucket = process.env.AWS_BUCKET || process.env.SUPABASE_BUCKET || '';
+    this.bucket = process.env.AWS_BUCKET || '';
     this.endpoint = process.env.AWS_ENDPOINT;
 
     this.client = new S3Client({

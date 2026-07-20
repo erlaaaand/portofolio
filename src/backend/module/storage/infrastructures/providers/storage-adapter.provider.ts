@@ -1,6 +1,4 @@
-import { IStorageAdapter } from '../adapters/storage.adapter.interface';
-import { LocalStorageAdapter } from '../adapters/local-storage.adapter';
-import { S3StorageAdapter } from '../adapters/s3-storage.adapter';
+import { IStorageAdapter, LocalStorageAdapter, S3StorageAdapter } from '@/src/backend/module/storage/infrastructures/adapters';
 
 export const getStorageAdapter = (): IStorageAdapter => {
   const driver = process.env.STORAGE_DRIVER || 'local';

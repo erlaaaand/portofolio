@@ -1,13 +1,14 @@
-import { getDbConnection } from '../../../database/config';
-import { StoredFileEntity, FilePurpose } from '../../domains/entities/stored-file.entity';
-import { getStorageAdapter } from '../../infrastructures/providers/storage-adapter.provider';
+import { getDbConnection } from '@/src/backend/module/database/config';
+import { StoredFileEntity, FilePurpose } from '@/src/backend/module/storage/domains/entities/stored-file.entity';
+import { getStorageAdapter } from '@/src/backend/module/storage/infrastructures/providers/storage-adapter.provider';
 import { v4 as uuidv4 } from 'uuid';
 import { extname } from 'path';
+import { PayloadTooLargeError } from '@/src/backend/core/exceptions';
 
 export class UploadFileUseCase {
   async execute(file: File, purpose: FilePurpose, userId?: string) {
     const maxSize = parseInt(process.env.UPLOAD_MAX_SIZE || '10485760');
-    if (file.size > maxSize) throw new Error('File melebihi batas ukuran.');
+    if (file.size > maxSize) throw new PayloadTooLargeError(`File melebihi batas ukuran (Maksimal ${maxSize / 1024 / 1024} MB).`);
 
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);

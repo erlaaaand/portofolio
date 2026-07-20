@@ -1,17 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { uploadFileUseCase } from '../../../../backend/module/storage/applications/use-cases/upload-file.use-case';
-import { FilePurpose } from '../../../../backend/module/storage/domains/entities/stored-file.entity';
+import { uploadFileUseCase } from '@/src/backend/module/storage/applications/use-cases/upload-file.use-case';
+import { FilePurpose } from '@/src/backend/module/storage/domains/entities/stored-file.entity';
+import { DomainError } from '@/src/backend/core/exceptions';
 
 export async function POST(request: NextRequest) {
   try {
+    const authHeader = request.headers.get('authorization');
+    const secretKey = process.env.ADMIN_SECRET_KEY;
+
+    if (!secretKey) {
+      return NextResponse.json(
+        { error: 'Konfigurasi server tidak lengkap. Keamanan API tidak dapat dipastikan.' },
+        { status: 500 }
+      );
+    }
+
+    if (!authHeader || authHeader !== `Bearer ${secretKey}`) {
+      return NextResponse.json(
+        { error: 'Akses ditolak. Kunci otorisasi tidak valid atau tidak ditemukan.' },
+        { status: 401 }
+      );
+    }
+    
     const formData = await request.formData();
-    const file = formData.get('file') as File | null;
-    const purpose = (formData.get('purpose') as FilePurpose) || FilePurpose.OTHER;
-    const userId = formData.get('userId') as string | undefined;
+    
+    const fileEntry = formData.get('file');
+    const file = fileEntry instanceof File ? fileEntry : null;
+    
+    const purposeEntry = formData.get('purpose');
+    const isValidPurpose = typeof purposeEntry === 'string' && Object.values(FilePurpose).includes(purposeEntry as FilePurpose);
+    const purpose = isValidPurpose ? (purposeEntry as FilePurpose) : FilePurpose.OTHER;
+    
+    const userIdEntry = formData.get('userId');
+    const userId = typeof userIdEntry === 'string' ? userIdEntry : undefined;
 
     if (!file) {
       return NextResponse.json(
-        { statusCode: 422, message: 'File tidak ditemukan dalam request.', module: 'storage' },
+        { statusCode: 422, message: 'File tidak ditemukan dalam request atau format tidak sesuai.', module: 'storage' },
         { status: 422 }
       );
     }
@@ -32,24 +57,25 @@ export async function POST(request: NextRequest) {
     );
 
   } catch (error: unknown) {
-
-    let errorMessage = 'Terjadi kesalahan pada server.';
-
-    if (error instanceof Error) {
-      errorMessage = error.message;
-    } else if (typeof error === 'string') {
-      errorMessage = error;
+    if (error instanceof DomainError) {
+      return NextResponse.json(
+        { 
+          statusCode: error.statusCode, 
+          message: error.message,
+          module: 'storage'
+        },
+        { status: error.statusCode }
+      );
     }
 
-    const isPayloadTooLarge = errorMessage.includes('batas ukuran');
-    
+    console.error('Storage Upload Error:', error);
     return NextResponse.json(
       { 
-        statusCode: isPayloadTooLarge ? 413 : 500, 
-        message: errorMessage,
+        statusCode: 500, 
+        message: 'Terjadi kesalahan internal pada server.',
         module: 'storage'
       },
-      { status: isPayloadTooLarge ? 413 : 500 }
+      { status: 500 }
     );
   }
 }
