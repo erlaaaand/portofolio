@@ -4,7 +4,7 @@ import * as dotenv from 'dotenv';
 import { join } from 'path';
 import { StoredFileEntity } from '@/src/backend/module/storage/domains/entities';
 import { UserEntity } from '@/src/backend/module/auth/domains/entities';
-import { ProjectEntity, ProfileEntity } from '@/src/backend/module/portfolio/domains/entities';
+import { ProjectEntity, ProfileEntity, SkillEntity } from '@/src/backend/module/portfolio/domains/entities';
 
 dotenv.config({ path: join(process.cwd(), '.env') });
 
@@ -15,7 +15,7 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
-  entities: [StoredFileEntity, UserEntity, ProjectEntity, ProfileEntity],
+  entities: [StoredFileEntity, UserEntity, ProjectEntity, ProfileEntity, SkillEntity],
   migrations: [join(__dirname, '..', 'migrations', '*.{ts,js}')],
   
   synchronize: false,
