@@ -1,4 +1,4 @@
-import { PrimaryColumn, CreateDateColumn, UpdateDateColumn, BeforeInsert } from 'typeorm';
+import { PrimaryColumn, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, BeforeInsert } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 
 export abstract class BaseEntity {
@@ -10,6 +10,9 @@ export abstract class BaseEntity {
 
     @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
     updatedAt!: Date;
+
+    @DeleteDateColumn({ name: 'deleted_at', type: 'timestamp', nullable: true })
+    deletedAt?: Date;
 
     @BeforeInsert()
     generateId() {
